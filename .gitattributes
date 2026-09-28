@@ -1,0 +1,2 @@
+# Third-party DistMesh (GPL v2+), vendored unmodified: exclude from language stats.
+plate_fem/distmesh/** linguist-vendored

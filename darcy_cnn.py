@@ -3,21 +3,21 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from coursework.darcy import DarcyCNN, DarcyConfig, run_training
+from sciml.darcy import DarcyCNN, DarcyConfig, run_training
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Train the CNN Darcy operator model for Coursework 2 Problem 2.")
+    parser = argparse.ArgumentParser(description="Train the CNN operator baseline for 2D Darcy flow.")
     parser.add_argument(
         "--train-path",
         type=Path,
-        default=Path("Coursework2_Problem_2") / "Darcy_2D_data_train.mat",
+        default=Path("darcy_data") / "Darcy_2D_data_train.mat",
         help="Path to the Darcy training dataset.",
     )
     parser.add_argument(
         "--test-path",
         type=Path,
-        default=Path("Coursework2_Problem_2") / "Darcy_2D_data_test.mat",
+        default=Path("darcy_data") / "Darcy_2D_data_test.mat",
         help="Path to the Darcy test dataset.",
     )
     parser.add_argument(
