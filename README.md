@@ -1,8 +1,4 @@
-# Physics-Informed & Operator Learning for PDEs
-
-![Python](https://img.shields.io/badge/python-3.10%2B-blue)
-![PyTorch](https://img.shields.io/badge/PyTorch-2.x-ee4c2c)
-![License](https://img.shields.io/badge/license-MIT-green)
+# Physics-Informed Networks and Neural Operators for PDEs
 
 Two ways of learning solutions to PDEs with neural networks, implemented from scratch in PyTorch:
 
@@ -10,6 +6,7 @@ Two ways of learning solutions to PDEs with neural networks, implemented from sc
 2. **Neural operators** that learn the map from permeability field to pressure field for **2D Darcy flow**, comparing a plain CNN with a **Fourier Neural Operator (FNO)**.
 
 ![FNO prediction on a held-out Darcy sample](assets/darcy_fno_prediction.png)
+<sub>Fourier Neural Operator on a held-out Darcy-flow sample: permeability a(x), true and predicted pressure u(x), and absolute error (below 5 × 10⁻⁴ against a peak pressure of about 0.29).</sub>
 
 ---
 
@@ -45,9 +42,9 @@ Data-assisted PINN (50 measurements):
 
 ---
 
-## Methods
+## Method
 
-### Problem 1: PINN for plane-stress elasticity
+### PINN for plane-stress elasticity
 
 The domain is a quarter plate with a circular hole, using symmetry boundary conditions. A traction of σ·n = (0.1, 0) is applied on the right edge; the top edge and the hole are traction-free. The material has E = 10 and ν = 0.3.
 
@@ -61,11 +58,11 @@ The loss is a sum of MSE terms, with all derivatives computed by autograd:
 - **Constitutive consistency:** `stress_net` must match Hooke's law applied to the strains of `disp_net`, at interior and boundary points.
 - **Equilibrium:** ∇·σ = 0.
 - **Boundary conditions:** symmetry displacements, applied traction, and a traction-free hole.
-- **Measurements** (`PINN_data.py` only): MSE against 50 randomly chosen FEM displacement values, weighted ×100.
+- **Measurements** (`pinn_data.py` only): MSE against 50 randomly chosen FEM displacement values, weighted ×100.
 
 Training uses Adam (learning rate 10⁻³) with StepLR (×0.5 every 2000 iterations). Ground truth comes from a MATLAB FE solver meshed with DistMesh.
 
-### Problem 2: operator learning for Darcy flow
+### Operator learning for Darcy flow
 
 The goal is to learn the solution operator 𝒢: a(x) ↦ u(x) of −∇·(a∇u) = f on the unit square. The dataset has 1000 training and 100 test pairs on a 32×32 grid.
 
@@ -76,23 +73,23 @@ Both models use unit-Gaussian input normalisation, a relative L² loss, Adam (le
 
 ---
 
-## Repository layout
+## Repository structure
 
 ```
 .
-├── PINN.py                    # Physics-only PINN (Problem 1)
-├── PINN_data.py               # PINN + sparse measurements (Problem 1)
-├── Darcy_CNN.py               # CNN operator baseline (Problem 2)
-├── Darcy_FNO.py               # Fourier Neural Operator (Problem 2)
-├── coursework/
+├── pinn.py                    # Physics-only PINN (plate elasticity)
+├── pinn_data.py               # PINN + sparse measurements (plate elasticity)
+├── darcy_cnn.py               # CNN operator baseline (Darcy flow)
+├── darcy_fno.py               # Fourier Neural Operator (Darcy flow)
+├── sciml/
 │   ├── pinn.py                # Networks, physics losses, training loop, plotting
 │   └── darcy.py               # CNN, FNO, data loading, training loop, plotting
-├── Coursework2_Problem_1/     # MATLAB FE solver + DistMesh; generates plate_data.mat
-├── Coursework2_Problem_2/     # Place the Darcy .mat datasets here (not tracked)
+├── plate_fem/                 # MATLAB FE solver + DistMesh; generates plate_data.mat
+├── darcy_data/                # Place the Darcy .mat datasets here (not tracked)
 └── assets/                    # Figures used in this README
 ```
 
-## Getting started
+## Reproducing
 
 Dependencies are managed with [uv](https://docs.astral.sh/uv/):
 
@@ -102,16 +99,16 @@ uv sync
 
 **Data**
 
-- *Plate problem:* `Coursework2_Problem_1/plate_data.mat` is included. To regenerate it, run `Coursework2_Problem_1/Plate_hole.m` in MATLAB.
-- *Darcy flow:* the datasets came with the course and are not redistributed here. Place `Darcy_2D_data_train.mat` and `Darcy_2D_data_test.mat` in `Coursework2_Problem_2/`. They are HDF5 `.mat` files with 32×32×N `a_field` and `u_field` arrays.
+- *Plate problem:* `plate_fem/plate_data.mat` is included. To regenerate it, run `plate_fem/Plate_hole.m` in MATLAB.
+- *Darcy flow:* the datasets are not redistributed here. Place `Darcy_2D_data_train.mat` and `Darcy_2D_data_test.mat` in `darcy_data/`. They are HDF5 `.mat` files with 32×32×N `a_field` and `u_field` arrays.
 
 **Train**
 
 ```bash
-uv run PINN.py --iterations 50000
-uv run PINN_data.py --iterations 50000 --measurement-weight 100
-uv run Darcy_CNN.py --epochs 200
-uv run Darcy_FNO.py --epochs 200 --modes 12 --width 32
+uv run pinn.py --iterations 50000
+uv run pinn_data.py --iterations 50000 --measurement-weight 100
+uv run darcy_cnn.py --epochs 200
+uv run darcy_fno.py --epochs 200 --modes 12 --width 32
 ```
 
 Each script writes its loss curves, prediction plots, a CSV history and checkpoints to `outputs/<run>/`. Pass `--resume-from outputs/<run>/checkpoint_latest.pt` to continue a run, and `--help` to list all options. Training uses CUDA when it is available.
@@ -120,10 +117,10 @@ Each script writes its loss curves, prediction plots, a CSV history and checkpoi
 
 ## Acknowledgements
 
-- Developed for coursework in **4C11 Data-Driven and Learning-Based Methods in Mechanics and Materials**, Department of Engineering, University of Cambridge. The problem setup, FE solver scaffolding and datasets were provided by the course.
-- [DistMesh](http://persson.berkeley.edu/distmesh/) © Per-Olof Persson, GPL v2+. It is vendored unmodified in `Coursework2_Problem_1/distmesh/` under its own licence.
+- Originally developed for 4C11 Data-Driven and Learning-Based Methods in Mechanics and Materials, Department of Engineering, University of Cambridge, which provided the problem setup, FE solver scaffolding and datasets.
+- [DistMesh](http://persson.berkeley.edu/distmesh/) © Per-Olof Persson, GPL v2+. It is vendored unmodified in `plate_fem/distmesh/` under its own licence.
 - FNO architecture after Li et al., [*Fourier Neural Operator for Parametric Partial Differential Equations*](https://arxiv.org/abs/2010.08895), ICLR 2021.
 
-## License
+## Licence
 
 The code written for this project is licensed under the [MIT License](LICENSE). Third-party components keep their original licences.

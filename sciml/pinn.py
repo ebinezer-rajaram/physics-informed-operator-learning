@@ -87,7 +87,7 @@ def _to_tensor(array: np.ndarray, requires_grad: bool = False) -> torch.Tensor:
 
 def load_plate_data(path: Path) -> PlateData:
     if not path.exists():
-        raise FileNotFoundError(f"Missing plate data file at {path}. Run Coursework2_Problem_1/Plate_hole.m first.")
+        raise FileNotFoundError(f"Missing plate data file at {path}. Run plate_fem/Plate_hole.m first.")
 
     raw = scipy.io.loadmat(path)
     triangulation = np.asarray(raw["t"], dtype=np.int64) - 1

@@ -26,5 +26,5 @@ tmp_*.py
 .ruff_cache/
 .claude/
 
-# Large course datasets (not redistributed; see README)
-Coursework2_Problem_2/*.mat
+# Large Darcy datasets (not redistributed; see README)
+darcy_data/*.mat
